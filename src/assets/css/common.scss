@@ -1,0 +1,15 @@
+$themeColor: #804bdd;
+$bgColor: #f4f4f4;
+$whiteColor: #fff;
+$darkColor: #333;
+
+// element 主题颜色 -s
+.el-input ,
+.el-textarea {
+    --el-input-focus-border: #79a8a9;
+}
+.el-select {
+    --el-select-input-focus-border-color: #79a8a9;
+}
+
+// element 主题颜色 -e

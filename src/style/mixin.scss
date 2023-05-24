@@ -1,0 +1,11 @@
+@mixin bgWhite {
+  background: #fff;
+}
+
+/**
+定义盒子高度宽度
+ */
+@mixin setWAndH($w,$h) {
+  width: $w;
+  height: $h;
+}
