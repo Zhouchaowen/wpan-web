@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="func">
-      <el-button type="primary" plain>新建文件夹</el-button>
+      <el-button type="primary" plain @click="isDialogShow=true">新建文件夹</el-button>
       <el-upload
           class="upload-btn"
           action="#"
@@ -56,6 +56,26 @@
         </el-table-column>
       </el-table>
     </div>
+    <Dialog
+      :filename="filename"
+      :dialogVisible="isDialogShow"
+    ></Dialog>
+<!--    <el-dialog-->
+<!--        v-model="dialogVisible"-->
+<!--        title="新建文件夹"-->
+<!--        width="30%"-->
+<!--        :before-close="handleClose"-->
+<!--    >-->
+<!--      <el-input v-model="filename" placeholder="Please input" />-->
+<!--      <template #footer>-->
+<!--          <span class="dialog-footer">-->
+<!--            <el-button @click="dialogVisible = false">取消</el-button>-->
+<!--            <el-button type="primary" @click="onsubmit()">-->
+<!--              确定-->
+<!--            </el-button>-->
+<!--          </span>-->
+<!--      </template>-->
+<!--    </el-dialog>-->
   </div>
 </template>
 
@@ -65,10 +85,14 @@ import {ref} from "vue";
 import {onMounted, reactive} from "vue-demi";
 import {toRefs} from "@vue/reactivity";
 import { ElMessage } from 'element-plus';
-import { uploadFile, getFolder } from "@/utils/modules/user.js";
+import { uploadFile, getFolder, addFolder } from "@/utils/modules/user.js";
+import Dialog from "@/components/Dialog/index.vue";
 
 export default {
   name: "allFiles",
+  components: {
+    Dialog
+  },
   setup() {
     const state = reactive({
       // 文件列表
@@ -78,9 +102,23 @@ export default {
       // 当前页面类型 0：全部 1：文档 2：图像 3：视频 4：音频
       currentType: '0',
       fileList: [],
-      currentFolderId: '0' //当前目录Id
+      currentFolderId: '0', //当前目录Id
+      isDialogShow: false,
+      filename: "" //文件夹名称
     })
 
+    const onsubmit = () => {
+      let obj = {
+        "parent_id": state.currentFolderId,
+        "folder_name": state.filename
+      }
+      addFolder(obj).then(res => {
+        console.log(res)
+        getFolders(state.currentFolderId)
+      })
+    }
+
+    const dialogVisible = ref(null)
     onMounted(() => {
       getFolders(state.currentFolderId)
     })
@@ -91,6 +129,7 @@ export default {
     const handleSelectionChange = (val) => {
       multipleSelection.value = val
     }
+
     const handleUpload = (file) => {
       console.log(file)
       var formdata = new FormData()
@@ -162,7 +201,9 @@ export default {
       toOpenFolder,
       handleUpload,
       handleExceed,
-      getFolders
+      getFolders,
+      dialogVisible,
+      onsubmit
     }
   }
 }

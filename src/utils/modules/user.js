@@ -28,3 +28,12 @@ export function uploadFile(data) {
         data
     })
 }
+
+//新建文件夹
+export function addFolder(data) {
+    return request({
+        url: '/api/user/folder',
+        method: 'post',
+        data
+    })
+}
