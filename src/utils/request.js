@@ -12,7 +12,7 @@ const service = axios.create({
 service.interceptors.request.use(
     config => {
         console.log(config)
-        config.headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYzMwNDI5NmQtYzZhMi00ZDkyLWI2MjAtMjViOTY4YTQ1YzdhIiwidXNlcm5hbWUiOiJ6Y3cxIiwiZXhwIjoxNjg1NjM0NzgzLCJpc3MiOiJibHVlYmVsbCJ9.SoFcAj-DzgyX0vy5s10bg4LMKXX-Z2-JIxZZHMgPtzU" // 请求头携带token
+        config.headers.Authorization = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiM2E3MmNhNGEtM2QxMi00NjdkLWI5N2MtMjQ5NDUwN2IzOWM5IiwidXNlcm5hbWUiOiJ6Y3cxIiwiZXhwIjoxNjkzMjM1OTc5LCJpc3MiOiJibHVlYmVsbCJ9.RHZglB1mlGdIMPkPk1vkNSDY_wuLyvh9ayYO54AbVTA" // 请求头携带token
         return config
     },
     error => {

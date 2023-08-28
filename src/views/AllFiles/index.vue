@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="func">
-      <el-button type="primary" plain @click="isDialogShow=true">新建文件夹</el-button>
+      <el-button type="primary" plain @click="flag=!flag">新建文件夹</el-button>
       <el-upload
           class="upload-btn"
           action="#"
@@ -17,7 +17,7 @@
     <div class="filesAddress">
       <el-breadcrumb separator="/">
         <el-breadcrumb-item
-            @click="toOpenFolder(item.id)"
+            @click="toOpenFolder(item)"
             v-for="(item, index) in breadcrumbList"
             :key="index"
         >
@@ -35,6 +35,8 @@
         :data="tableData"
         style="width: 100%"
         @selection-change="handleSelectionChange"
+        @cell-mouse-enter="mouseEnter"
+        @cell-mouse-leave="mouseLeave"
       >
         <el-table-column type="selection" width="55" />
         <el-table-column label="">
@@ -46,36 +48,42 @@
             <i class="iconfont icon-yinpin icon_audio" v-if="scope.row.type == '4'"></i>
           </template>
         </el-table-column>
-        <el-table-column property="name" label="名称" />
-        <el-table-column property="type" label="类型" />
+        <el-table-column width="280" label="名称">
+          <template #default="scope">
+            <div class="nameBox">
+              <div class="name openStyle" @click="toOpenFolder(scope.row)" v-if="scope.row.type=='0'">{{ scope.row.name }}</div>
+              <div class="name" v-else>{{ scope.row.name }}</div>
+              <div class="func_icon" v-if="scope.row.isHover">
+                <i class="iconfont icon-a-fenxiang2"></i>
+                <i class="iconfont icon-biaoge-xiazai" @click="downloadImg(scope.row.id, scope.row.name, scope.row.postfix)"></i>
+                <i class="iconfont icon-shanchu"></i>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column property="type" label="类型">
+          <template #default="scope">
+            <span v-if="scope.row.type == '0'">文件夹</span>
+            <span v-if="scope.row.type == '1'">图像</span>
+            <span v-if="scope.row.type == '2'">文档</span>
+            <span v-if="scope.row.type == '3'">音频</span>
+            <span v-if="scope.row.type == '4'">视频</span>
+          </template>
+        </el-table-column>
         <el-table-column property="expand" label="扩展名" />
         <el-table-column property="size" label="大小" />
         <el-table-column property="download" label="下载次数" />
         <el-table-column label="上传时间" width="200">
-          <template #default="scope">{{ scope.row.date }}</template>
+          <template #default="scope">{{ dayjs(scope.row.date).format('YYYY-MM-DD HH:mm:ss') }}</template>
         </el-table-column>
       </el-table>
     </div>
     <Dialog
-      :filename="filename"
-      :dialogVisible="isDialogShow"
+        ref="dialogRef"
+        :visible="flag"
+        @close="closeDialog"
+        @submit="onsubmit"
     ></Dialog>
-<!--    <el-dialog-->
-<!--        v-model="dialogVisible"-->
-<!--        title="新建文件夹"-->
-<!--        width="30%"-->
-<!--        :before-close="handleClose"-->
-<!--    >-->
-<!--      <el-input v-model="filename" placeholder="Please input" />-->
-<!--      <template #footer>-->
-<!--          <span class="dialog-footer">-->
-<!--            <el-button @click="dialogVisible = false">取消</el-button>-->
-<!--            <el-button type="primary" @click="onsubmit()">-->
-<!--              确定-->
-<!--            </el-button>-->
-<!--          </span>-->
-<!--      </template>-->
-<!--    </el-dialog>-->
   </div>
 </template>
 
@@ -87,6 +95,8 @@ import {toRefs} from "@vue/reactivity";
 import { ElMessage } from 'element-plus';
 import { uploadFile, getFolder, addFolder } from "@/utils/modules/user.js";
 import Dialog from "@/components/Dialog/index.vue";
+import axios from 'axios';
+var dayjs = require('dayjs')
 
 export default {
   name: "allFiles",
@@ -103,14 +113,16 @@ export default {
       currentType: '0',
       fileList: [],
       currentFolderId: '0', //当前目录Id
-      isDialogShow: false,
-      filename: "" //文件夹名称
+      // filename: "" //文件夹名称
     })
 
-    const onsubmit = () => {
+    const flag = ref(false)
+
+    const onsubmit = (data) => {
+      flag.value = false
       let obj = {
         "parent_id": state.currentFolderId,
-        "folder_name": state.filename
+        "folder_name": data
       }
       addFolder(obj).then(res => {
         console.log(res)
@@ -118,10 +130,14 @@ export default {
       })
     }
 
-    const dialogVisible = ref(null)
     onMounted(() => {
       getFolders(state.currentFolderId)
+
     })
+    const closeDialog = () => {
+      flag.value = false
+    }
+
     const route = useRoute()
     state.currentType=route.params.type;
 
@@ -130,8 +146,18 @@ export default {
       multipleSelection.value = val
     }
 
+    const mouseEnter = (row) => {
+      let index = state.tableData.findIndex(item => item.id == row.id)
+      state.tableData[index].isHover = true;
+    }
+
+    const mouseLeave = (row) => {
+      let index = state.tableData.findIndex(item => item.id == row.id)
+      state.tableData[index].isHover = false;
+    }
+
+    // 上传文件
     const handleUpload = (file) => {
-      console.log(file)
       var formdata = new FormData()
       formdata.append('file', file.file)
       formdata.append('folder_id', state.currentFolderId)
@@ -140,6 +166,53 @@ export default {
         console.log(res)
         getFolders(state.currentFolderId)
       })
+    }
+
+    const downloadImg = async (id, name, postfix) => {
+      console.log(name)
+      // const response = await axios.get('/download/fileA', {headers: {Authorization: 'Token xxxxxx'}});
+
+      // downloadFolder(id).then(res => {
+      //   const blob = new Blob([res], { type: 'application/x-png' });
+      //   const url = window.URL.createObjectURL(blob);
+      //   const a = document.createElement('a');
+      //   a.href = url;
+      //   a.download = [name];
+      //   a.click();
+      //   window.URL.revokeObjectURL(url);
+      // })
+
+      axios.defaults.headers['content-type'] = 'application/json;charset=UTF-8'
+      axios.defaults.headers['Authorization'] = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYzMwNDI5NmQtYzZhMi00ZDkyLWI2MjAtMjViOTY4YTQ1YzdhIiwidXNlcm5hbWUiOiJ6Y3cxIiwiZXhwIjoxNjg3MTg4ODA1LCJpc3MiOiJibHVlYmVsbCJ9.-dunMfu6UPzVqYMkTx-6S2D8m844hV-WmSPENyo2Al4'
+      axios({
+        method: 'get',
+        url: '/api/user/download/'+id, // 请求地址
+        responseType: 'blob' // 表明返回服务器返回的数据类型
+      }).then(
+          response => {
+            let blob = new Blob([response.data], {
+              type: 'application/x-png'
+            })
+            console.log(blob)
+            let fileName = name + postfix
+            if (window.navigator.msSaveOrOpenBlob) {
+              // console.log(2)
+              navigator.msSaveBlob(blob, fileName)
+            } else {
+              // console.log(3)
+              var link = document.createElement('a')
+              link.href = window.URL.createObjectURL(blob)
+              link.download = fileName
+              link.click()
+              //释放内存
+              window.URL.revokeObjectURL(link.href)
+            }
+          },
+          err => {
+            console.log(err)
+          }
+      )
+
     }
 
     const handleExceed = (files, uploadFiles) => {
@@ -152,9 +225,19 @@ export default {
     }
 
     // 打开文件夹
-    const toOpenFolder = (rootId) => {
-      console.log(rootId)
-      getFolders(rootId)
+    const toOpenFolder = (data) => {
+      // console.log("面包屑",state.breadcrumbList)
+      let index = state.breadcrumbList.findIndex(item => item.id==data.id);
+      if(index>-1) {
+        state.breadcrumbList.splice(index+1)
+      } else {
+        state.breadcrumbList.push({
+          id: data.id,
+          name: data.name,
+          state: data.type=='0'?'folder': 'file'
+        })
+      }
+        getFolders(data.id)
     }
 
     const getFolders = (rootId) => {
@@ -179,7 +262,9 @@ export default {
             expand: '-',
             type: '0',
             size: '-',
-            download: ''
+            download: '',
+            id: item.id,
+            isHover: false
           }
         })
         let files = data.files.map(item => {
@@ -189,7 +274,9 @@ export default {
             expand: item.postfix,
             type: item.type,
             size: item.size,
-            download: item.download_num
+            download: item.download_num,
+            id: item.id,
+            isHover: false
           }
         })
         state.tableData = [...folders, ...files]
@@ -202,8 +289,13 @@ export default {
       handleUpload,
       handleExceed,
       getFolders,
-      dialogVisible,
-      onsubmit
+      onsubmit,
+      closeDialog,
+      mouseEnter,
+      mouseLeave,
+      downloadImg,
+      flag,
+      dayjs
     }
   }
 }
@@ -249,6 +341,25 @@ export default {
       .icon_audio {
         font-size: 26px;
         color: #ff292f;
+      }
+      .nameBox {
+        display: flex;
+        justify-content: space-between;
+        cursor: pointer;
+        .name{
+          &.openStyle {
+            &:hover {
+              text-decoration: underline;
+              color: #79bbff;
+            }
+          }
+          font-weight: bold;
+        }
+        .func_icon {
+          width: 70px;
+          display: flex;
+          justify-content: space-between;
+        }
       }
     }
   }

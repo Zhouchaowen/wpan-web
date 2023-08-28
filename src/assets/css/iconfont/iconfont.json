@@ -1,10 +1,31 @@
 {
   "id": "4065758",
-  "name": "wpan-web",
+  "name": "system-manage",
   "font_family": "iconfont",
   "css_prefix_text": "icon-",
   "description": "",
   "glyphs": [
+    {
+      "icon_id": "577357",
+      "name": "删除",
+      "font_class": "shanchu",
+      "unicode": "e74b",
+      "unicode_decimal": 59211
+    },
+    {
+      "icon_id": "7674857",
+      "name": "导出",
+      "font_class": "biaoge-xiazai",
+      "unicode": "e70f",
+      "unicode_decimal": 59151
+    },
+    {
+      "icon_id": "33987020",
+      "name": "分享 2",
+      "font_class": "a-fenxiang2",
+      "unicode": "e620",
+      "unicode_decimal": 58912
+    },
     {
       "icon_id": "1126",
       "name": "文件夹",

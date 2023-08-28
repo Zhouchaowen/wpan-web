@@ -1,39 +1,45 @@
 <template>
-  <el-dialog
-    v-model="props.dialogVisible"
-    title="新建文件夹"
-    width="30%"
-    :before-close="handleClose"
-  >
-    <el-input v-model="props.filename" placeholder="Please input" />
-    <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="props.dialogVisible = false">取消</el-button>
-            <el-button type="primary" @click="onsubmit()">
-              确定
-            </el-button>
-          </span>
-    </template>
-  </el-dialog>
+  <div class="hello">
+    <el-dialog title="提示" v-model="dialogVisble" width="30%" :before-close="close">
+      <el-input v-model="filename" placeholder="请输入文件夹名称" />
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="close">取 消</el-button>
+          <el-button type="primary" @click="confirm">确 定</el-button>
+        </span>
+      </template>
+    </el-dialog>
+  </div>
 </template>
-
 <script>
+import { ref, watch } from 'vue'
 export default {
-  name: "Dialog",
-  props: ['filename','dialogVisible'],
-  setup(props) {
-    console.log(props)
-    const handleClose = () => {
-
+  props: {
+    visible: {
+      type: Boolean,
+      default: false
     }
+  },
+  setup(props, ctx) {
+    const dialogVisble = ref(false)
+    const filename = ref(null)
+    const close = () => {
+      filename.value = '';
+      ctx.emit("close", false);
+    };
+    const confirm = () => {
+      filename.value = '';
+      ctx.emit("submit", filename.value);
+    }
+    watch(() => props.visible, (val) => {
+      dialogVisble.value = val
+    });
     return {
-      handleClose,
-      props
+      dialogVisble,
+      confirm,
+      close,
+      filename
     }
   }
 }
 </script>
-
-<style scoped>
-
-</style>

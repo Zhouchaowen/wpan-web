@@ -37,3 +37,10 @@ export function addFolder(data) {
         data
     })
 }
+
+export function downloadFolder(id) {
+    return request({
+        url: '/api/user/download/'+id,
+        method: 'get'
+    })
+}
