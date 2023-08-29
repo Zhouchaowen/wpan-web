@@ -36,7 +36,7 @@ module.exports = {
         secure: false,
         // ws: true,
         pathRewrite: {
-            '^/api': ''   // 请求数据路径别名,这里是注意将static/mock放入public文件夹
+            '^/api': '/static/mock'   // 请求数据路径别名,这里是注意将static/mock放入public文件夹
         }
       }
     }

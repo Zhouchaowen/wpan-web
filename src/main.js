@@ -18,6 +18,10 @@ import '@/style/index.scss' // global css
 //
 // const app = createApp(App);
 // app.config.globalProperties.$echarts = echarts;
+// VUE_APP_MOCK的值为true，并且在开发环境下
+if (process.env.VUE_APP_MOCK && process.env.NODE_ENV === 'development') {
+    require("./mock");
+}
 
 // createApp(App).config.globalProperties.$dayjs = dayjs;
 createApp(App)
